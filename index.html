@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/leaflet.photon.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+
+             <style>        /*INI DIUBAH YAAAAAA YANG STYLE*/
+/* KECILKAN IKON TOMBOL ABSTRACT */
+.leaflet-control-abstract a{
+    width:28px !important;
+    height:28px !important;
+    line-height:28px !important;
+    font-size:14px !important;
+}
+
+/* Kalau ikon terlihat kepotong */
+.leaflet-control-abstract a img{
+    width:16px !important;
+    height:16px !important;
+}
+</style>
+        <style>
+.map-titlebox{
+    background: linear-gradient(135deg,#0b3d91,#1f6ae2);
+    color:white;
+    padding:14px 18px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    width:340px;
+    font-family:'Segoe UI',sans-serif;
+}
+
+.title-flex{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.title-logos{
+    display:flex;
+    gap:8px;
+}
+
+.title-logos img{
+    height:42px;
+    background:white;
+    padding:4px;
+    border-radius:6px;
+}
+
+.title-text h1{
+    font-size:18px;
+    margin:0;
+    font-weight:700;
+}
+
+.title-text p{
+    font-size:12px;
+    margin:4px 0 0 0;
+}
+</style>
+        <style>
+/* IKON KACA PEMBESAR SEARCH */
+.leaflet-control-search .search-button{
+    position: relative;
+}
+
+.leaflet-control-search .search-button:before{
+    font-family: "Font Awesome 5 Free";
+    content: "\f002";
+    font-weight: 900;
+    font-size: 16px;
+    line-height: 28px;
+    display: block;
+    text-align: center;
+    color: #333;
+}
+</style>
+<style>
+      /*style diganti(ditambah) untuk popupbox*/
+
+.popup-title {
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.popup-location {
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.popup-box {
+    background: #f1f3f5;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.popup-box div {
+    margin-bottom: 6px;
+}
+
+/* BADGE */
+.badge {
+    padding: 2px 6px;
+    border-radius: 5px;
+    color: white;
+    font-size: 12px;
+}
+
+/* KONDISI */
+.kondisi.baik { background: green; }
+.kondisi.ringan { background: orange; }
+.kondisi.sedang { background: darkorange; }
+.kondisi.berat { background: red; }
+.kondisi.revitalisasi { background: blue; }
+
+/* STATUS */
+.status-on { background: green; }
+.status-off { background: red; }
+
+/* TEMA */
+.theme-plts .popup-box { background: #fff4e6; }
+.theme-pltmh .popup-box { background: #eaf4ff; }
+    
+/*ganti ukuran kotak abstrak*/
+ .leaflet-control.abstractUncollapsed{
+    width: 360px !important;
+    max-width: 360px !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    padding: 0 !important;
+} 
+/* Zoom (+ -) agak naik dari bawah */
+.leaflet-control-zoom{
+    position: fixed !important;
+    left: 12px !important;
+    bottom: 20px !important;
+    top: auto !important;
+    right: auto !important;
+    z-index: 1000;
+}
+
+/* Search di atas zoom, beri jarak lebih */
+.leaflet-control-search{
+    position: fixed !important;
+    left: 12px !important;
+    bottom: 95px !important; /* dinaikkan */
+    top: auto !important;
+    right: auto !important;
+    z-index: 1000;
+}
+
+/* Hasil pencarian muncul ke atas */
+.leaflet-control-search .search-tooltip{
+    bottom: 50px !important;
+    top: auto !important;
+}
+
+</style>
+        <title>SIGAP EBT: Peta Sebaran Aset Pembangkit Energi Baru Terbarukan Dinas Energi dan Sumber Daya Mineral Provinsi Sulawesi Tenggara</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet.photon.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="data/BatasKabupatenKotaSulawesiTenggara_1.js"></script>
+        <script src="data/AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: 'rgba(255, 255, 0, 1.00)',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: 'rgba(255, 255, 0, 1.00)',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:2
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // modify popup if contains media
+        function addClassToPopupIfMedia(content, popup) {
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            var imgTd = tempDiv.querySelector('td img');
+            if (imgTd) {
+                var src = imgTd.getAttribute('src');
+                if (/\.(jpg|jpeg|png|gif|bmp|webp|avif)$/i.test(src)) {
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp3|wav|ogg|aac)$/i.test(src)) {
+                    var audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = src;
+                    imgTd.parentNode.replaceChild(audio, imgTd);
+                    popup._contentNode.classList.add('media');
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else if (/\.(mp4|webm|ogg|mov)$/i.test(src)) {
+                    var video = document.createElement('video');
+                    video.controls = true;
+                    video.src = src;
+                    video.style.width = "400px";
+                    video.style.height = "300px";
+                    video.style.maxHeight = "60vh";
+                    video.style.maxWidth = "60vw";
+                    imgTd.parentNode.replaceChild(video, imgTd);
+                    popup._contentNode.classList.add('media');
+                    // Aggiorna il popup quando il video carica i metadati
+                    video.addEventListener('loadedmetadata', function() {
+                        popup.update();
+                    });
+                    setTimeout(function() {
+                        popup.setContent(tempDiv.innerHTML);
+                        popup.update();
+                    }, 10);
+                } else {
+                    popup._contentNode.classList.remove('media');
+                }
+            } else {
+                popup._contentNode.classList.remove('media');
+            }
+        }
+/*INI DIGANTI ATAU DIUBAH JUGA YA*/
+    
+       var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+this._div.innerHTML = `
+<div class="map-titlebox">
+    <div class="title-flex">
+        
+        <div class="title-logos">
+            <img src="logo_esdm.png">
+            <img src="logo_sultra.png">
+        </div>
+
+        <div class="title-text">
+            <h1>SIGAP EBT</h1>
+            <p>Peta Sebaran Aset Pembangkit Energi Baru Terbarukan<br>
+            Dinas ESDM Provinsi Sulawesi Tenggara</p>
+        </div>
+
+    </div>
+</div>`;
+};
+        title.addTo(map);
+        var abstract = new L.Control({'position':'topright'});
+        abstract.onAdd = function (map) {
+            this._div = L.DomUtil.create('div',
+            'leaflet-control abstract');
+            this._div.id = 'abstract'
+                this._div.setAttribute("onmouseenter", "abstract.show()");
+                this._div.setAttribute("onmouseleave", "abstract.hide()");
+                this.hide();
+                return this._div;
+            };
+            abstract.hide = function () {
+                this._div.classList.remove("abstractUncollapsed");
+                this._div.classList.add("abstract");
+                this._div.innerHTML = 'i'
+            }
+            abstract.show = function () {
+    this._div.classList.remove("abstract");
+    this._div.classList.add("abstractUncollapsed");
+
+    this._div.innerHTML = `
+    <div style="
+        background:#fffdf5;
+        border-left:6px solid #f4c542;
+        padding:14px 16px;
+        border-radius:12px;
+        font-family:'Segoe UI',sans-serif;
+        font-size:13px;
+        line-height:1.6;
+        box-shadow:0 4px 12px rgba(0,0,0,0.25);
+        color:#333;
+    ">
+        <div style="font-weight:700; margin-bottom:8px; font-size:14px;">
+            Tentang SIGAP EBT
+        </div>
+
+        SIGAP EBT merupakan peta digital berbasis Sistem Informasi Geografis (SIG) yang menampilkan sebaran aset pembangkit energi baru terbarukan (EBT) milik Dinas Energi dan Sumber Daya Mineral Provinsi Sulawesi Tenggara. Peta ini memuat informasi nama pembangkit, kapasitas, tahun pembangunan, wilayah, kondisi, status operasional, serta keterjangkauan jaringan PLN.
+    </div>
+    `;
+};
+        abstract.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 2,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_BatasKabupatenKotaSulawesiTenggara_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDPPUM'] !== null ? autolinker.link(String(feature.properties['KDPPUM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['NAMOBJ'] !== null ? autolinker.link(String(feature.properties['NAMOBJ']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['REMARK'] !== null ? autolinker.link(String(feature.properties['REMARK']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDPBPS'] !== null ? autolinker.link(String(feature.properties['KDPBPS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['FCODE'] !== null ? autolinker.link(String(feature.properties['FCODE']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LUASWH'] !== null ? autolinker.link(String(feature.properties['LUASWH']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['UUPP'] !== null ? autolinker.link(String(feature.properties['UUPP']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SRS_ID'] !== null ? autolinker.link(String(feature.properties['SRS_ID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LCODE'] !== null ? autolinker.link(String(feature.properties['LCODE']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['METADATA'] !== null ? autolinker.link(String(feature.properties['METADATA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDEBPS'] !== null ? autolinker.link(String(feature.properties['KDEBPS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDEPUM'] !== null ? autolinker.link(String(feature.properties['KDEPUM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDCBPS'] !== null ? autolinker.link(String(feature.properties['KDCBPS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDCPUM'] !== null ? autolinker.link(String(feature.properties['KDCPUM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDBBPS'] !== null ? autolinker.link(String(feature.properties['KDBBPS']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['KDBPUM'] !== null ? autolinker.link(String(feature.properties['KDBPUM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WADMKD'] !== null ? autolinker.link(String(feature.properties['WADMKD']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WIADKD'] !== null ? autolinker.link(String(feature.properties['WIADKD']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WADMKC'] !== null ? autolinker.link(String(feature.properties['WADMKC']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WIADKC'] !== null ? autolinker.link(String(feature.properties['WIADKC']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>WADMKK</strong><br />' + (feature.properties['WADMKK'] !== null ? autolinker.link(String(feature.properties['WADMKK']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WIADKK'] !== null ? autolinker.link(String(feature.properties['WIADKK']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WADMPR'] !== null ? autolinker.link(String(feature.properties['WADMPR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['WIADPR'] !== null ? autolinker.link(String(feature.properties['WIADPR']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['TIPADM'] !== null ? autolinker.link(String(feature.properties['TIPADM']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SHAPE_Leng'] !== null ? autolinker.link(String(feature.properties['SHAPE_Leng']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SHAPE_Area'] !== null ? autolinker.link(String(feature.properties['SHAPE_Area']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['layer'] !== null ? autolinker.link(String(feature.properties['layer']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['path'] !== null ? autolinker.link(String(feature.properties['path']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_BatasKabupatenKotaSulawesiTenggara_1_0(feature) {
+            switch(String(feature.properties['WADMKK'])) {
+                case 'Bombana':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,18,59,0.49019607843137253)',
+                interactive: false,
+            }
+                    break;
+                case 'Buton':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(64,64,162,0.4117647058823529)',
+                interactive: false,
+            }
+                    break;
+                case 'Buton Selatan':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(70,107,227,0.5725490196078431)',
+                interactive: false,
+            }
+                    break;
+                case 'Buton Tengah':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(66,148,255,0.611764705882353)',
+                interactive: false,
+            }
+                    break;
+                case 'Buton Utara':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(40,188,235,0.6980392156862745)',
+                interactive: false,
+            }
+                    break;
+                case 'Kolaka':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(24,221,194,0.8156862745098039)',
+                interactive: false,
+            }
+                    break;
+                case 'Kolaka Timur':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(50,242,152,0.6313725490196078)',
+                interactive: false,
+            }
+                    break;
+                case 'Kolaka Utara':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(109,254,98,0.7176470588235294)',
+                interactive: false,
+            }
+                    break;
+                case 'Konawe':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(164,252,60,0.7058823529411765)',
+                interactive: false,
+            }
+                    break;
+                case 'Konawe Kepulauan':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(205,236,52,0.5882352941176471)',
+                interactive: false,
+            }
+                    break;
+                case 'Konawe Selatan':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(238,207,58,0.5882352941176471)',
+                interactive: false,
+            }
+                    break;
+                case 'Konawe Utara':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(253,172,52,0.5882352941176471)',
+                interactive: false,
+            }
+                    break;
+                case 'Kota Bau Bau':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(251,126,33,0.6352941176470588)',
+                interactive: false,
+            }
+                    break;
+                case 'Kota Kendari':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(235,80,14,0.2901960784313726)',
+                interactive: false,
+            }
+                    break;
+                case 'Muna':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(208,47,5,0.4)',
+                interactive: false,
+            }
+                    break;
+                case 'Muna Barat':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(169,22,1,0.7686274509803922)',
+                interactive: false,
+            }
+                    break;
+                case 'Wakatobi':
+                    return {
+                pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(122,4,3,0.6431372549019608)',
+                interactive: false,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_BatasKabupatenKotaSulawesiTenggara_1');
+        map.getPane('pane_BatasKabupatenKotaSulawesiTenggara_1').style.zIndex = 401;
+        map.getPane('pane_BatasKabupatenKotaSulawesiTenggara_1').style['mix-blend-mode'] = 'normal';
+        var layer_BatasKabupatenKotaSulawesiTenggara_1 = new L.geoJson(json_BatasKabupatenKotaSulawesiTenggara_1, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_BatasKabupatenKotaSulawesiTenggara_1',
+            layerName: 'layer_BatasKabupatenKotaSulawesiTenggara_1',
+            pane: 'pane_BatasKabupatenKotaSulawesiTenggara_1',
+            onEachFeature: pop_BatasKabupatenKotaSulawesiTenggara_1,
+            style: style_BatasKabupatenKotaSulawesiTenggara_1_0,
+        });
+        bounds_group.addLayer(layer_BatasKabupatenKotaSulawesiTenggara_1);
+        map.addLayer(layer_BatasKabupatenKotaSulawesiTenggara_1);
+       
+/*DIGANTI YAAA ATAU DIUBAH*/
+        function pop_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2(feature, layer) {
+
+    var p = feature.properties;
+
+    function aman(v){
+        return (v === null || v === undefined) ? '-' : v;
+    }
+
+    function line(icon, label, value){
+        if(value === '-') return '';
+        return `
+        <div class="popup-line">
+            <i class="fas ${icon}"></i>
+            <div>
+                <span class="popup-label">${label}:</span> ${value}
+            </div>
+        </div>`;
+    }
+/*tambahan pop up step 1(diganti)*/
+var kondisi = feature.properties['Kondisi Pembangkit'] || '-';
+var status = feature.properties['Status Operasional'] || '-';
+var jenis = feature.properties['q2wHide_Jenis Pembangkit'] || '';
+
+// ===== KONDISI =====
+function getKondisiIcon(kondisi) {
+    if (kondisi === 'Kondisi Baik') return '🟢';
+    if (kondisi === 'Rusak Ringan') return '🟡';
+    if (kondisi === 'Rusak Sedang') return '🟠';
+    if (kondisi === 'Rusak Berat') return '🔴';
+    if (kondisi === 'Sudah Revitalisasi') return '🔵';
+    return '⚪';
+}
+
+function getKondisiClass(kondisi) {
+    if (kondisi === 'Kondisi Baik') return 'baik';
+    if (kondisi === 'Rusak Ringan') return 'ringan';
+    if (kondisi === 'Rusak Sedang') return 'sedang';
+    if (kondisi === 'Rusak Berat') return 'berat';
+    if (kondisi === 'Sudah Revitalisasi') return 'revitalisasi';
+    return 'default';
+}
+
+// ===== STATUS =====
+function getStatusIcon(status) {
+    if (status === 'Menyala') return '⚡';
+    if (status === 'Tidak Menyala') return '⛔';
+    return '';
+}
+
+function getStatusClass(status) {
+    if (status === 'Menyala') return 'status-on';
+    if (status === 'Tidak Menyala') return 'status-off';
+    return 'status-default';
+}
+
+// ===== TEMA =====
+function getThemeClass(jenis) {
+    if (jenis === 'PLTS') return 'theme-plts';
+    if (jenis === 'PLTMH') return 'theme-pltmh';
+    return '';
+}
+/*ini juga diganti*/
+
+            var popupContent = `
+<div class="popup-clean ${getThemeClass(jenis)}">
+
+    <div class="popup-title">
+        ${jenis === 'PLTS' ? '☀️' : '💧'} 
+        ${feature.properties['Nama Pembangkit'] || '-'}
+    </div>
+
+    <div class="popup-location">
+        📍 ${feature.properties['Lokasi'] || '-'}
+    </div>
+
+    <hr>
+
+    <div class="popup-box">
+
+    <div>⚡ <b>Kapasitas:</b> ${feature.properties['Kapasitas (KWp)'] || '-'} kW</div>
+
+    <div>📅 <b>Tahun:</b> ${feature.properties['Tahun Beroperasi'] || '-'}</div>
+
+    <div>
+        ${getKondisiIcon(kondisi)} 
+        <b>Kondisi:</b> 
+        <span class="badge kondisi ${getKondisiClass(kondisi)}">
+            ${kondisi}
+        </span>
+    </div>
+
+    <div>🔌 <b>Jaringan PLN:</b> ${feature.properties['Jaringan PLN'] || '-'}</div>
+
+    <!-- STATUS (JANGAN DIUBAH) -->
+    <div>
+        ${getStatusIcon(status)} 
+        <b>Status:</b> 
+        <span class="badge status ${getStatusClass(status)}">
+            ${status}
+        </span>
+    </div>
+
+</div>
+
+</div>
+`; 
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+            
+        
+        layer.on('mouseover', function () {
+    this.openPopup();
+});
+
+layer.on('mouseout', function () {
+    this.closePopup();
+});
+        }
+/*SAMPE SINI*/
+        function style_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2_0(feature) {
+            switch(String(feature.properties['q2wHide_Jenis Pembangkit'])) {
+                case 'PLTMH':
+                    return {
+                pane: 'pane_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2',
+                radius: 5.999999999999998,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,255,255,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'PLTS':
+                    return {
+                pane: 'pane_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2',
+                radius: 5.999999999999998,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(19,206,248,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2');
+        map.getPane('pane_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2').style.zIndex = 402;
+        map.getPane('pane_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2').style['mix-blend-mode'] = 'normal';
+        var layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2 = new L.geoJson(json_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2',
+            layerName: 'layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2',
+            pane: 'pane_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2',
+            onEachFeature: pop_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2);
+        map.addLayer(layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2);
+        var overlaysTree = [
+            {label: 'Aset Pembangkit EBT Dinas ESDM Provinsi Sulawesi Tenggara<br /><table><tr><td style="text-align: center;"><img src="legend/AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2_PLTMH0.png" /></td><td>PLTMH</td></tr><tr><td style="text-align: center;"><img src="legend/AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2_PLTS1.png" /></td><td>PLTS</td></tr></table>', layer: layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2},
+            {label: 'Batas Kabupaten/Kota Sulawesi Tenggara<br /><table><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_Bombana0.png" /></td><td>Bombana</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_Buton1.png" /></td><td>Buton</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_ButonSelatan2.png" /></td><td>Buton Selatan</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_ButonTengah3.png" /></td><td>Buton Tengah</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_ButonUtara4.png" /></td><td>Buton Utara</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_Kolaka5.png" /></td><td>Kolaka</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KolakaTimur6.png" /></td><td>Kolaka Timur</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KolakaUtara7.png" /></td><td>Kolaka Utara</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_Konawe8.png" /></td><td>Konawe</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KonaweKepulauan9.png" /></td><td>Konawe Kepulauan</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KonaweSelatan10.png" /></td><td>Konawe Selatan</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KonaweUtara11.png" /></td><td>Konawe Utara</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KotaBauBau12.png" /></td><td>Kota Bau Bau</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_KotaKendari13.png" /></td><td>Kota Kendari</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_Muna14.png" /></td><td>Muna</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_MunaBarat15.png" /></td><td>Muna Barat</td></tr><tr><td style="text-align: center;"><img src="legend/BatasKabupatenKotaSulawesiTenggara_1_Wakatobi16.png" /></td><td>Wakatobi</td></tr></table>', layer: layer_BatasKabupatenKotaSulawesiTenggara_1},
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        var i = 0;
+        layer_BatasKabupatenKotaSulawesiTenggara_1.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['WADMKK'] !== null?String('<div style="color: #fc4040; font-size: 10pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['WADMKK']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_BatasKabupatenKotaSulawesiTenggara_1'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+        var i = 0;
+        layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2.eachLayer(function(layer) {
+            var context = {
+                feature: layer.feature,
+                variables: {}
+            };
+            layer.bindTooltip((layer.feature.properties['Nama Pembangkit'] !== null?String('<div style="color: #323232; font-size: 8pt; font-weight: bold; font-family: \'Open Sans\', sans-serif;">' + layer.feature.properties['Nama Pembangkit']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2'});
+            labels.push(layer);
+            totalMarkers += 1;
+              layer.added = true;
+              addLabel(layer, i);
+              i++;
+        });
+
+/*DIGANTI JUGA YA INI*/        
+        map.addControl(new L.Control.Search({
+    layer: layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2,
+    initial: false,
+    hideMarkerOnCollapse: true,
+    propertyName: 'Nama Pembangkit',
+
+    zoom: 18,              // zoom otomatis saat ketemu
+    moveToLocation: function(latlng, title, map) {
+        map.setView(latlng, 18);  // fokus & zoom ke titik
+    }
+}));
+        map.on("layeradd", function(){
+            resetLabels([layer_BatasKabupatenKotaSulawesiTenggara_1,layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_BatasKabupatenKotaSulawesiTenggara_1,layer_AsetPembangkitEBTDinasESDMProvinsiSulawesiTenggara_2]);
+        });
+
+
+        </script>        
+    </body>
+</html>
